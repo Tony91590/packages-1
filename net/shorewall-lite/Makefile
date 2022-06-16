@@ -8,20 +8,20 @@
 
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=shorewall-lite
+PKG_NAME:=shorewall6-lite
 PKG_MAJOR_MINOR_VERSION:=5.2
 PKG_BUGFIX_MAJOR_VERSION:=8
 PKG_BUGFIX_MINOR_VERSION:=
 PKG_VERSION:=$(PKG_MAJOR_MINOR_VERSION).$(PKG_BUGFIX_MAJOR_VERSION)$(PKG_BUGFIX_MINOR_VERSION)
 PKG_DIRECTORY:=$(PKG_MAJOR_MINOR_VERSION).$(PKG_BUGFIX_MAJOR_VERSION)
-PKG_RELEASE:=2
+PKG_RELEASE:=3
 
 PKG_SOURCE_URL:=http://shorewall.org/pub/shorewall/$(PKG_MAJOR_MINOR_VERSION)/shorewall-$(PKG_DIRECTORY)/ \
 	http://slovakia.shorewall.net/pub/shorewall/$(PKG_MAJOR_MINOR_VERSION)/shorewall-$(PKG_DIRECTORY)/ \
 	http://www.shorewall.no/pub/shorewall/$(PKG_MAJOR_MINOR_VERSION)/shorewall-$(PKG_DIRECTORY)/ \
 	http://france.shorewall.net/$(PKG_MAJOR_MINOR_VERSION)/shorewall-$(PKG_DIRECTORY)/
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_HASH:=b6ebf750f9501818da0967c80c3d6f08cede5531e48b23ebbf241a2d1fad2cfd
+PKG_HASH:=086764bb976d199b45563e39b1ab9a131ccb521d60d186f606dd8bbcee7fcada
 
 PKG_BUILD_DEPENDS:=HOST_OS_MACOS:fakeuname/host
 
@@ -29,40 +29,41 @@ PKG_MAINTAINER:=Willem van den Akker <wvdakker@wilsoft.nl>
 PKG_LICENSE:=GPL-2.0-or-later
 PKG_LICENSE_FILES:=COPYING
 
+
 include $(INCLUDE_DIR)/package.mk
 ifeq ($(CONFIG_HOST_OS_MACOS),y)
     include ../../utils/fakeuname/fakeuname.mk
 endif
 
-define Package/shorewall-lite
+define Package/shorewall6-lite
     SECTION:=net
     CATEGORY:=Network
-    DEPENDS:=+ip +iptables +shorewall-core
-    TITLE:=Shorewall Lite
+    DEPENDS:=+ip @IPV6 +ip6tables +shorewall-core
+    TITLE:=Shorewall6 Lite
     URL:=http://www.shorewall.net/
     SUBMENU:=Firewall
 endef
 
-define Package/shorewall-lite/description
+define Package/shorewall6-lite/description
 	The Shoreline Firewall, is high-level tool for configuring Netfilter.
 
-	Shorewall allows for central administration of multiple IPv4 firewalls
-	through use of Shorewall lite. The full Shorewall product is installed
-	on a central administrative system where compiled Shorewall scripts are
+	Shorewall6 allows for central administration of multiple IPv6 firewalls
+	through use of Shorewall6 lite. The full Shorewall6 product is installed
+	on a central administrative system where compiled Shorewall6 scripts are
 	generated. These scripts are copied to the firewall systems where they
-	run under the control of Shorewall-lite.
+	run under the control of Shorewall6-lite.
 
-	Note: This is the IPv4 implementation of Shorewall.
+	Note: This is the IPv6 implementation of Shorewall.
 endef
 
-define Package/shorewall-lite/conffiles
-/etc/shorewall-lite/
+define Package/shorewall6-lite/conffiles
+/etc/shorewall6-lite/
 endef
 
 CONFIGURE_ARGS += \
 	vendor=openwrt
 
-# MacOS bash is too old for shorewall-lite, use OpenWrt host tools/bash built for macos hosts
+# MacOS bash is too old for shorewall6-lite, use OpenWrt host tools/bash built for macos hosts
 # use fakeuname to avoid 'if `uname` is Darwin' checks
 MACOS_ENV := \
 	PATH=$(FAKEUNAME_PATH):$(TARGET_PATH_PKG) \
@@ -73,7 +74,7 @@ CONFIGURE_VARS += \
 
 # install.sh explicitly defines PATH= so fakeuname doesn't work. Remove PATH= on macos
 define Build/Prepare
-        $(call Build/Prepare/Default)
+	$(call Build/Prepare/Default)
 ifeq ($(CONFIG_HOST_OS_MACOS),y)
 	$(SED) '/^PATH=/d' $(PKG_BUILD_DIR)/install.sh
 endif
@@ -85,20 +86,20 @@ define Build/Compile
 	$(PKG_BUILD_DIR)/install.sh
 endef
 
-define Package/shorewall-lite/install
+define Package/shorewall6-lite/install
 	$(INSTALL_DIR) $(1)/etc/hotplug.d/iface/
 	$(INSTALL_DIR) $(1)/etc/init.d/
-	$(INSTALL_DIR) $(1)/etc/shorewall-lite/state/
+	$(INSTALL_DIR) $(1)/etc/shorewall6-lite/state/
 	$(INSTALL_DIR) $(1)/usr/sbin/
-	$(INSTALL_DIR) $(1)/usr/share/shorewall-lite/
-	$(CP) $(PKG_INSTALL_DIR)/etc/shorewall-lite/ $(1)/etc/
-	$(CP) $(PKG_INSTALL_DIR)/usr/share/shorewall-lite/ $(1)/usr/share/
-	$(CP) $(PKG_INSTALL_DIR)/usr/sbin/shorewall-lite $(1)/usr/sbin/
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/shorewall-lite/shorecap $(1)/usr/share/shorewall-lite/
-	$(INSTALL_BIN) ./files/hostname $(1)/usr/share/shorewall-lite/
-	$(INSTALL_BIN) ./files/hotplug_iface $(1)/etc/hotplug.d/iface/05-shorewall-lite
-	$(INSTALL_BIN) ./files/shorewall-lite.init $(1)/etc/init.d/shorewall-lite
-	$(INSTALL_BIN) ./files/vardir $(1)/etc/shorewall-lite/
+	$(INSTALL_DIR) $(1)/usr/share/shorewall6-lite/
+	$(CP) $(PKG_INSTALL_DIR)/etc/shorewall6-lite/ $(1)/etc/
+	$(CP) $(PKG_INSTALL_DIR)/usr/share/shorewall6-lite/ $(1)/usr/share/
+	$(CP) $(PKG_INSTALL_DIR)/usr/sbin/shorewall6-lite $(1)/usr/sbin/
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/shorewall6-lite/shorecap $(1)/usr/share/shorewall6-lite/
+	$(INSTALL_BIN) ./files/hostname $(1)/usr/share/shorewall6-lite/
+	$(INSTALL_BIN) ./files/hotplug_iface $(1)/etc/hotplug.d/iface/05-shorewall6-lite
+	$(INSTALL_BIN) ./files/shorewall6-lite.init $(1)/etc/init.d/shorewall6-lite
+	$(INSTALL_BIN) ./files/vardir $(1)/etc/shorewall6-lite/
 endef
 
-$(eval $(call BuildPackage,shorewall-lite))
+$(eval $(call BuildPackage,shorewall6-lite))
