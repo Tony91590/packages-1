@@ -10,9 +10,4 @@ uci -q batch <<-EOT
 	commit firewall
 EOT
 
-/etc/init.d/miniupnpd enabled && {
-	/etc/init.d/miniupnpd stop
-	/etc/init.d/miniupnpd disable
-}
-
 exit 0
