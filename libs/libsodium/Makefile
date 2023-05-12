@@ -8,20 +8,25 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libsodium
-PKG_VERSION:=1.0.16
-PKG_RELEASE:=1
+PKG_BASE_VERSION:=1.0.18
+PKG_RELEASE:=$(AUTORELEASE)
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://download.libsodium.org/libsodium/releases \
-https://github.com/jedisct1/libsodium/releases/download/$(PKG_VERSION)
-PKG_HASH:=eeadc7e1e1bcef09680fb4837d448fbdf57224978f865ac1c16745868fbd0533
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_URL:=https://github.com/jedisct1/libsodium.git
+PKG_SOURCE_DATE:=2022-02-27
+PKG_SOURCE_VERSION:=2e9b4c47c8cf6759a11a90c2468036e47674b29a
+PKG_MIRROR_HASH:=7bec6dcc5f5591db34b103efff6989feea573b63913c6ce400db1c583c475554
 
-PKG_FIXUP:=libtool autoreconf
-PKG_USE_MIPS16:=0
-PKG_INSTALL:=1
+PKG_VERSION:=$(PKG_BASE_VERSION)-$(PKG_SOURCE_DATE)-$(call version_abbrev,$(PKG_SOURCE_VERSION))
 
-PKG_MAINTAINER:=Damiano Renfer <damiano.renfer@gmail.com>
+PKG_MAINTAINER:=Damiano Renfer <x9w2n7xnu@relay.firefox.com>
 PKG_LICENSE:=ISC
+PKG_LICENSE_FILES:=LICENSE
+
+PKG_USE_MIPS16:=0
+PKG_FIXUP:=autoreconf
+PKG_INSTALL:=1
+PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -30,7 +35,6 @@ define Package/libsodium
   CATEGORY:=Libraries
   TITLE:=P(ortable|ackageable) NaCl-based crypto library
   URL:=https://github.com/jedisct1/libsodium
-  MAINTAINER:=Damiano Renfer <damiano.renfer@gmail.com>
 endef
 
 define Package/libsodium/description
@@ -53,7 +57,7 @@ endef
 
 CONFIGURE_ARGS+= \
 	--disable-ssp \
-	$(if $(CONFIG_LIBSODIUM_MINIMAL),--enable-minimal=yes,--enable-minimal=no)
+	$(if $(CONFIG_LIBSODIUM_MINIMAL),--enable,--disable)-minimal
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include/sodium

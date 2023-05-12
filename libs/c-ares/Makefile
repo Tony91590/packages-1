@@ -9,21 +9,21 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=c-ares
-PKG_VERSION:=1.14.0
+PKG_VERSION:=1.18.1
 PKG_RELEASE:=1
-PKG_LICENSE:=MIT
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://c-ares.haxx.se/download
-PKG_HASH:=45d3c1fd29263ceec2afc8ff9cd06d5f8f889636eb4e80ce3cc7f0eaf7aadc6e
+PKG_SOURCE_URL:=https://c-ares.org/download
+PKG_HASH:=1a7d52a8a84a9fbffb1be9133c0f6e17217d91ea5a6fa61f6b4729cda78ebbcf
 
-PKG_FIXUP:=autoreconf
-PKG_INSTALL:=1
+PKG_LICENSE:=MIT
+PKG_LICENSE_FILES:=LICENSE.md
+PKG_CPE_ID:=cpe:/a:c-ares_project:c-ares
+
+CMAKE_INSTALL:=1
 
 include $(INCLUDE_DIR)/package.mk
-
-TARGET_CPPFLAGS += $(filter -D%,$(TARGET_CFLAGS))
-TARGET_CFLAGS := $(filter-out -D%,$(TARGET_CFLAGS))
+include $(INCLUDE_DIR)/cmake.mk
 
 define Package/libcares
   SECTION:=libs
@@ -41,14 +41,16 @@ Netware, Android and many more operating systems.
 
 endef
 
+CMAKE_OPTIONS += \
+	-DCARES_STATIC=OFF \
+	-DCARES_SHARED=ON \
+	-DCARES_STATIC_PIC=ON \
+	-DCARES_BUILD_TESTS=OFF \
+	-DCARES_BUILD_TOOLS=OFF
+
 define Package/libcares/install
 	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/*.so.* $(1)/usr/lib/
-endef
-
-define Build/InstallDev
-	$(INSTALL_DIR) $(1)
-	$(CP) $(PKG_INSTALL_DIR)/* $(1)/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libcares.so.* $(1)/usr/lib/
 endef
 
 $(eval $(call BuildPackage,libcares))

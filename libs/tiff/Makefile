@@ -8,30 +8,24 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=tiff
-PKG_VERSION:=4.0.9
-PKG_RELEASE:=4
+PKG_VERSION:=4.3.0
+PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://download.osgeo.org/libtiff
-PKG_HASH:=6e7bdeec2c310734e734d19aae3a71ebe37a4d842e0e23dbb1b8921c0026cfcd
+PKG_HASH:=0e46e5acb087ce7d1ac53cf4f56a09b221537fc86dfc5daaad1c2e89e1b37ac8
 
-PKG_FIXUP:=autoreconf
-PKG_REMOVE_FILES:=autogen.sh aclocal.m4
-
-PKG_LICENSE:=BSD
+PKG_MAINTAINER:=Jiri Slachta <jiri@slachta.eu>
+PKG_LICENSE:=BSD-3-Clause
 PKG_LICENSE_FILES:=COPYRIGHT
+PKG_CPE_ID:=cpe:/a:libtiff:libtiff
 
-PKG_INSTALL:=1
-
-PKG_CONFIG_DEPENDS:=CONFIG_PACKAGE_libtiffxx
-
-include $(INCLUDE_DIR)/uclibc++.mk
 include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/cmake.mk
 
 define Package/tiff/Default
   TITLE:=TIFF
-  URL:=http://www.remotesensing.org/libtiff/
-  MAINTAINER:=Jiri Slachta <jiri@slachta.eu>
+  URL:=http://simplesystems.org/libtiff/
 endef
 
 define Package/libtiff
@@ -40,14 +34,7 @@ $(call Package/tiff/Default)
   CATEGORY:=Libraries
   TITLE+= library
   DEPENDS:=+zlib +libjpeg
-endef
-
-define Package/libtiffxx
-$(call Package/tiff/Default)
-  SECTION:=libs
-  CATEGORY:=Libraries
-  TITLE+= library(c++ bindings)
-  DEPENDS:=+libtiff $(CXX_DEPENDS)
+  ABI_VERSION:=5
 endef
 
 define Package/tiff-utils
@@ -59,41 +46,37 @@ $(call Package/tiff/Default)
   DEPENDS:=+libtiff
 endef
 
-CONFIGURE_ARGS += \
-	$(if $(CONFIG_PACKAGE_libtiffxx),--enable-cxx,--disable-cxx) \
-	--disable-lzma \
-	--enable-ccitt \
-	--enable-packbits \
-	--enable-lzw \
-	--enable-thunder \
-	--enable-next \
-	--enable-logluv \
-	--enable-mdi \
-	--enable-zlib \
-	--enable-jpeg \
-	--disable-old-jpeg \
-	--disable-jbig \
-	--without-x
+CMAKE_OPTIONS += \
+	-Dld-version-script=OFF \
+	-Dccitt=ON \
+	-Dpackbits=ON \
+	-Dlzw=ON \
+	-Dthunder=ON \
+	-Dnext=ON \
+	-Dlogluv=ON \
+	-Dmdi=ON \
+	-Dzlib=ON \
+	-Dpixarlog=ON \
+	-Djpeg=ON \
+	-Dold-jpeg=OFF \
+	-Djbig=OFF \
+	-Dlzma=OFF \
+	-Dzstd=OFF \
+	-Dwebp=OFF \
+	-Djpeg12=OFF \
+	-Dcxx=OFF
 
-define Build/InstallDev/hxx
-	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/include/*.hxx $(1)/usr/include/
-endef
+TARGET_CFLAGS += $(TARGET_CPPFLAGS)
 
 define Build/InstallDev
-	$(INSTALL_DIR) $(1)/usr/{lib,include}
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/lib* $(1)/usr/lib/
-	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/include/*.h $(1)/usr/include/
-	$(if $(CONFIG_PACKAGE_libtiffxx), $(call Build/InstallDev/hxx,$(1)))
+	$(call Build/InstallDev/cmake,$(1))
+	$(SED) 's,/usr/include,$$$${prefix}/include,g' $(1)/usr/lib/pkgconfig/libtiff-4.pc
+	$(SED) 's,/usr/lib,$$$${exec_prefix}/lib,g' $(1)/usr/lib/pkgconfig/libtiff-4.pc
 endef
 
 define Package/libtiff/install
 	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libtiff.so* $(1)/usr/lib/
-endef
-
-define Package/libtiffxx/install
-	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libtiffxx.so* $(1)/usr/lib/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libtiff.so.$(ABI_VERSION)* $(1)/usr/lib
 endef
 
 define Package/tiff-utils/install
@@ -102,5 +85,4 @@ define Package/tiff-utils/install
 endef
 
 $(eval $(call BuildPackage,libtiff))
-$(eval $(call BuildPackage,libtiffxx))
 $(eval $(call BuildPackage,tiff-utils))

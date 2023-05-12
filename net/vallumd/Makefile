@@ -8,17 +8,16 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=vallumd
-PKG_VERSION:=0.1.3
+PKG_VERSION:=0.2.0
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://github.com/stintel/vallumd/archive/$(PKG_VERSION)/
-PKG_HASH:=b40bede34ea321daf799276111e0e804007dc7c10eb031a0a654982957dcfb25
-
-PKG_LICENSE:=GPL-3.0
-PKG_LICENSE_FILES:=COPYING
+PKG_SOURCE_URL:=https://codeload.github.com/stintel/vallumd/tar.gz/$(PKG_VERSION)?
+PKG_HASH:=7c1baffa3f7889c9c6f2795aac134c50a309ef201764d5ce6bbbce5d657416c0
 
 PKG_MAINTAINER:=Stijn Tintel <stijn@linux-ipv6.be>
+PKG_LICENSE:=GPL-3.0
+PKG_LICENSE_FILES:=COPYING
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
@@ -27,7 +26,7 @@ define Package/vallumd
   SECTION:=net
   CATEGORY:=Network
   TITLE:=Centralized or distributed blacklist
-  DEPENDS:=+ipset +libmosquitto
+  DEPENDS:=+ca-bundle +ipset +libmosquitto +libopenssl
 endef
 
 define Package/vallumd/description

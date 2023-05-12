@@ -9,18 +9,19 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=isc-dhcp
 UPSTREAM_NAME:=dhcp
-PKG_VERSION:=4.4.1
-PKG_RELEASE:=2
+PKG_VERSION:=4.4.3
+PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_LICENSE:=BSD-3-Clause
 PKG_LICENSE_FILES:=LICENSE
 PKG_MAINTAINER:=Philip Prindeville <philipp@redfish-solutions.com>
+PKG_CPE_ID:=cpe:/a:isc:dhcp
 
 PKG_SOURCE:=$(UPSTREAM_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=ftp://ftp.isc.org/isc/dhcp/$(PKG_VERSION) \
 		http://ftp.funet.fi/pub/mirrors/ftp.isc.org/isc/dhcp/$(PKG_VERSION) \
 		http://ftp.iij.ad.jp/pub/network/isc/dhcp/$(PKG_VERSION)
-PKG_HASH:=2a22508922ab367b4af4664a0472dc220cc9603482cf3c16d9aff14f3a76b608
+PKG_HASH:=0e3ec6b4c2a05ec0148874bcd999a66d05518378d77421f607fb0bc9d0135818
 
 PKG_FIXUP:=autoreconf
 PKG_BUILD_PARALLEL:=1
@@ -59,7 +60,7 @@ define Package/isc-dhcp-relay/description
 endef
 
 define Package/isc-dhcp-relay-ipv4/description
-$(call Package/isc-dhcp-relay-ipv6/description)
+$(call Package/isc-dhcp-relay/description)
  This package is compiled with IPv4 support only.
 endef
 
@@ -131,6 +132,35 @@ $(call Package/isc-dhcp-server/description)
  This package is compiled with IPv4 and IPv6 support.
 endef
 
+define Package/isc-dhcp-dyndns-ipv4
+  $(call Package/isc-dhcp/Default)
+  TITLE+= server dynamic DNS dependencies (meta)
+  DEPENDS+=isc-dhcp-server-ipv4 +bind-server +bind-client
+  VARIANT:=ipv4
+endef
+
+define Package/isc-dhcp-dyndns-ipv6
+  $(call Package/isc-dhcp/Default)
+  TITLE+= server dynamic DNS dependencies (meta)
+  DEPENDS+=isc-dhcp-server-ipv6 +bind-server +bind-client
+  VARIANT:=ipv6
+endef
+
+define Package/isc-dhcp-dyndns/description
+ implements the Dynamic Host Configuration Protocol (DHCP) and the Internet
+ Bootstrap Protocol (BOOTP).
+endef
+
+define Package/isc-dhcp-dyndns-ipv4/description
+$(call Package/isc-dhcp-dyndns/description)
+ This package is compiled with IPv4 support only.
+endef
+
+define Package/isc-dhcp-dyndns-ipv6/description
+$(call Package/isc-dhcp-dyndns/description)
+ This package is compiled with IPv4 and IPv6 support.
+endef
+
 define Package/isc-dhcp-omshell-ipv4
   $(call Package/isc-dhcp/Default)
   DEPENDS:= +isc-dhcp-server-ipv4
@@ -161,10 +191,11 @@ $(call Package/isc-dhcp-omshell/description)
 endef
 
 CONFIGURE_ARGS += \
-	--disable-tracing 		\
 	--enable-paranoia		\
 	--disable-dependency-tracking	\
-	--with-randomdev=/dev/urandom \
+	--with-randomdev=/dev/urandom	\
+	--disable-backtrace		\
+	ac_cv_path_AR=$(TARGET_AR)	\
 	ac_cv_file__dev_random=yes
 
 ifeq ($(BUILD_VARIANT),ipv4)
@@ -174,10 +205,14 @@ ifeq ($(BUILD_VARIANT),ipv6)
   CONFIGURE_ARGS += --enable-dhcpv6
 endif
 
+TARGET_CFLAGS += -fcommon
+
 define Build/Compile
 	$(MAKE) -C $(PKG_BUILD_DIR)			\
 		BUILD_CC="$(HOSTCC_NOCACHE)"		\
 		CROSS_CC="$(TARGET_CC)"			\
+		TARGET_AR="$(TARGET_AR)"		\
+		TARGET_RANLIB="$(TARGET_RANLIB)"	\
 		host_alias="$(GNU_TARGET_NAME)"		\
 		target_alias="$(GNU_TARGET_NAME)"	\
 		build_alias="$(GNU_HOST_NAME)"		\
@@ -186,6 +221,8 @@ define Build/Compile
 		DESTDIR="$(PKG_INSTALL_DIR)"		\
 		BUILD_CC="$(HOSTCC_NOCACHE)"		\
 		CROSS_CC="$(TARGET_CC)"			\
+		TARGET_AR="$(TARGET_AR)"		\
+		TARGET_RANLIB="$(TARGET_RANLIB)"	\
 		host_alias="$(GNU_TARGET_NAME)"		\
 		target_alias="$(GNU_TARGET_NAME)"	\
 		build_alias="$(GNU_HOST_NAME)"		\
@@ -196,7 +233,7 @@ define Package/isc-dhcp-relay-$(BUILD_VARIANT)/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/dhcrelay $(1)/usr/sbin
 	$(INSTALL_DIR) $(1)/etc/config
-	$(INSTALL_DATA) ./files/dhcrelay.conf $(1)/etc/config
+	$(INSTALL_DATA) ./files/dhcrelay.conf $(1)/etc/config/dhcrelay
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/dhcrelay4.init $(1)/etc/init.d/dhcrelay4
 endef
@@ -218,6 +255,10 @@ endef
 
 define Package/isc-dhcp-server-ipv6/conffiles
 /etc/dhcpd6.conf
+endef
+
+define Package/isc-dhcp-dyndns-$(BUILD_VARIANT)/install
+	:
 endef
 
 define Package/isc-dhcp-client-$(BUILD_VARIANT)/install
@@ -244,9 +285,11 @@ endef
 
 $(eval $(call BuildPackage,isc-dhcp-relay-ipv4))
 $(eval $(call BuildPackage,isc-dhcp-server-ipv4))
+$(eval $(call BuildPackage,isc-dhcp-dyndns-ipv4))
 $(eval $(call BuildPackage,isc-dhcp-client-ipv4))
 $(eval $(call BuildPackage,isc-dhcp-omshell-ipv4))
 $(eval $(call BuildPackage,isc-dhcp-relay-ipv6))
 $(eval $(call BuildPackage,isc-dhcp-server-ipv6))
+$(eval $(call BuildPackage,isc-dhcp-dyndns-ipv6))
 $(eval $(call BuildPackage,isc-dhcp-client-ipv6))
 $(eval $(call BuildPackage,isc-dhcp-omshell-ipv6))

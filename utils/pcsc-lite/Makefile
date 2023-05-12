@@ -8,15 +8,16 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=pcsc-lite
-PKG_VERSION:=1.8.23
-PKG_RELEASE:=1
+PKG_VERSION:=1.9.5
+PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=https://pcsclite.apdu.fr/files/
-PKG_HASH:=5a27262586eff39cfd5c19aadc8891dd71c0818d3d629539bd631b958be689c9
+PKG_HASH:=9ee3f9b333537562177893559ad4f7b8d5c23ebe828eef53056c02db14049d08
 PKG_MAINTAINER:=Daniel Golle <daniel@makrotopia.org>
 PKG_LICENSE:=BSD-3-Clause
 PKG_LICENSE_FILES:=COPYING
+PKG_CPE_ID:=cpe:/a:muscle:pcsc-lite
 
 PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
@@ -70,6 +71,7 @@ CONFIGURE_ARGS += \
 	--disable-libsystemd \
 	--enable-libusb \
 	--enable-static \
+	--enable-ipcdir=/var/run/pcscd \
 	--enable-usbdropdir=/usr/lib/pcsc/drivers
 
 define Build/InstallDev

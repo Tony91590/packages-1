@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=beanstalkd
 PKG_VERSION:=1.9
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 # for now, build from latest commit since releases are infrequent and
 # useful fixes trickle in...
@@ -19,6 +19,7 @@ PKG_HASH:=6d5155ab347b731640495b1f0df6a4a849e84194d2ef0c2ec6af3879ee1aca2c
 PKG_MAINTAINER:=Philip Prindeville <philipp@redfish-solutions.com>
 PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=LICENSE
+PKG_CPE_ID:=cpe:/a:wildbit:beanstalkd
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -36,7 +37,7 @@ define Build/Configure
 endef
 
 define Build/Compile
-	cd $(PKG_BUILD_DIR) && make CC="$(TARGET_CC)" CFLAGS="$(TARGET_CFLAGS)" LDFLAGS="$(TARGET_LDFLAGS)" PREFIX=/usr
+	cd $(PKG_BUILD_DIR) && make CC="$(TARGET_CC)" CFLAGS="$(TARGET_CFLAGS)" LDFLAGS="$(TARGET_LDFLAGS)" PREFIX=/usr OS=linux
 endef
 
 define Package/beanstalkd/install

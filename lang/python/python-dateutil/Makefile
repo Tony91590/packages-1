@@ -8,40 +8,34 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=python-dateutil
-PKG_VERSION:=2.6.1
+PKG_VERSION:=2.8.2
 PKG_RELEASE:=1
 PKG_LICENSE:=BSD-2-Clause
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://pypi.python.org/packages/54/bb/f1db86504f7a49e1d9b9301531181b00a1c7325dc85a29160ee3eaa73a54/
-PKG_HASH:=891c38b2a02f5bb1be3e4793866c8df49c7d19baabf9c1bad62547e0b4866aca
+PYPI_NAME:=$(PKG_NAME)
+PKG_HASH:=0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86
+PKG_MAINTAINER:=Alexandru Ardelean <ardeleanalex@gmail.com>
 
+HOST_PYTHON3_PACKAGE_BUILD_DEPENDS:=setuptools-scm
+
+include ../pypi.mk
 include $(INCLUDE_DIR)/package.mk
-include ../python-package.mk
 
-define Package/python-dateutil
+include ../python3-package.mk
+
+define Package/python3-dateutil
   SUBMENU:=Python
   SECTION:=lang
   CATEGORY:=Languages
-  MAINTAINER:=Gergely Kiss <mail.gery@gmail.com>
   TITLE:=Extensions to the standard Python datetime module
   URL:=https://dateutil.readthedocs.org/
-  DEPENDS:=+python +python-six
+  DEPENDS:=+python3 +python3-six
 endef
 
-define Package/python-dateutil/description
+define Package/python3-dateutil/description
   Extensions to the standard Python datetime module
 endef
 
-define Build/Compile
-	$(call Build/Compile/PyMod,,install --prefix=/usr --root=$(PKG_INSTALL_DIR))
-endef
-
-define Package/python-dateutil/install
-	$(INSTALL_DIR) $(1)$(PYTHON_PKG_DIR)
-	$(CP) \
-	    $(PKG_INSTALL_DIR)$(PYTHON_PKG_DIR)/* \
-	    $(1)$(PYTHON_PKG_DIR)
-endef
-
-$(eval $(call BuildPackage,python-dateutil))
+$(eval $(call Py3Package,python3-dateutil))
+$(eval $(call BuildPackage,python3-dateutil))
+$(eval $(call BuildPackage,python3-dateutil-src))
